@@ -1,4 +1,4 @@
-package com.xtel.training.ptd.common.utils;
+package com.xtel.training.ptd.utils;
 
 import java.lang.reflect.Array;
 

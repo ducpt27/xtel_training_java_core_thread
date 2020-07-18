@@ -1,42 +1,61 @@
-package com.xtel.training.ptd.common.utils;
+package com.xtel.training.ptd.utils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 public class FileUtils {
 
-    public static String readLine(String filePath, int lineIndex) throws Exception {
-        File f = new File(filePath);
-        Scanner scanner = null;
+    public static final boolean deleteFile(String filePath) {
+        if (filePath == null) return true;
+        File file = new File(filePath);
+        if (file.exists()) return file.delete();
+        return true;
+    }
+
+    public static void writeFile(String outFile, String data) throws Exception {
+        writeFile(outFile, data, false);
+    }
+
+    public static void writeFile(String outFile, String data, boolean isAppend) throws Exception {
+        BufferedWriter bw = null;
+        FileWriter fw = null;
         try {
-            scanner = new Scanner(f);
-            if (canRead(f)) {
-                int i = 0;
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    if (i == lineIndex) return line;
-                    i++;
-                }
-            }
-        } catch (Exception e) {
+            File file = new File(outFile);
+            if (!file.exists()) file.createNewFile();
+            fw = new FileWriter(file.getAbsoluteFile(), isAppend);
+            bw = new BufferedWriter(fw);
+            bw.write(data);
+        } catch (IOException e) {
             throw e;
         } finally {
-            scanner.close();
-            return null;
+            try {
+                if (bw != null)
+                    bw.close();
+                if (fw != null)
+                    fw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
-    public static String[] readAllLine(String filePath) throws Exception {
-        ArrayList<String> arr = new ArrayList<>();
+    public static String[] readFile(String filePath, int lineIndex) throws Exception {
         File f = new File(filePath);
         Scanner scanner = null;
+        ArrayList<String> arr = new ArrayList<>();
         try {
             if (canRead(f)) {
                 scanner = new Scanner(f);
+                int i = 0;
                 while (scanner.hasNextLine()) {
-                    arr.add(scanner.nextLine());
+                    if (i != lineIndex) {
+                        arr.add(scanner.nextLine());
+                    } else {
+                        String[] line = new String[1];
+                        line[1] = scanner.nextLine();
+                        return line;
+                    }
+                    i++;
                 }
                 scanner.close();
             }
@@ -48,6 +67,14 @@ public class FileUtils {
             scanner.close();
             return null;
         }
+    }
+
+    public static String readLine(String filePath, int lineIndex) throws Exception {
+        return readFile(filePath, lineIndex)[0];
+    }
+
+    public static String[] readFile(String filePath) throws Exception {
+        return readFile(filePath, -1);
     }
 
     public static boolean canRead(File file) {
